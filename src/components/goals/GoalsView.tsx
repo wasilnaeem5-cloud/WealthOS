@@ -1,243 +1,73 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { CalendarDays, CheckCircle2, CircleAlert, Plus, Target, Trash2 } from 'lucide-react';
 import { useWealth } from '../../lib/context/WealthContext';
 import { GoalService } from '../../lib/services/goalService';
-import { Target, Plus, Trash2, Calendar, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { GoalInput } from '../../lib/validation/goals';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Input } from '../ui/Input';
+import { ProgressBar } from '../ui/ProgressBar';
 
 const goalService = new GoalService();
+const money = (currency: string, value: number) => `${currency} ${Math.round(value).toLocaleString()}`;
 
 export const GoalsView: React.FC = () => {
   const { goals, userProfile, financialProfile, addGoal, deleteGoal } = useWealth();
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: '', targetAmount: 150000, currentAmount: 0, targetDate: '2028-12-31', contributionAmount: 10000 });
+  const currency = userProfile?.currency || financialProfile?.assumptions.currency || 'PKR';
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form, setForm] = useState<GoalInput>({
-    name: '',
-    targetAmount: 25000,
-    currentAmount: 5000,
-    targetDate: '2028-12-31',
-    contributionAmount: 400,
-  });
+  const totalTarget = useMemo(() => goals.reduce((sum, goal) => sum + goal.targetAmount, 0), [goals]);
+  const totalCurrent = useMemo(() => goals.reduce((sum, goal) => sum + goal.currentAmount, 0), [goals]);
 
-  const curr = userProfile?.currency || '$';
-  const expectedReturn = financialProfile?.assumptions.expectedAnnualReturn || 0.08;
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.name.trim() || form.targetAmount <= 0 || form.currentAmount < 0) return;
+    setSaving(true);
+    try {
+      await addGoal(form);
+      setOpen(false);
+      setForm({ name: '', targetAmount: 150000, currentAmount: 0, targetDate: '2028-12-31', contributionAmount: 10000 });
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim()) return;
-    await addGoal(form);
-    setIsModalOpen(false);
-    setForm({
-      name: '',
-      targetAmount: 25000,
-      currentAmount: 5000,
-      targetDate: '2028-12-31',
-      contributionAmount: 400,
-    });
+  const remove = async (id: string) => {
+    setDeleting(id);
+    try { await deleteGoal(id); } finally { setDeleting(null); }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Target className="w-5 h-5 text-amber-400" />
-            Goal Planner & Target Gap Analysis
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Turn your financial dreams into measurable contribution requirements and track timeline gap progress.
-          </p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-indigo-500/20 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Goal
-        </button>
+    <div className="space-y-7">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--accent-cyan)]">Goal planner</p><h1 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">Your goals.</h1><p className="mt-2 text-sm text-[var(--text-secondary)]">Turn future plans into measurable targets.</p></div>
+        <Button onClick={() => setOpen(true)} leftIcon={<Plus className="h-4 w-4" />}>Add goal</Button>
       </div>
 
-      {/* Goals Card Grid */}
-      {goals.length === 0 ? (
-        <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-2xl space-y-4 max-w-lg mx-auto my-8">
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 inline-block">
-            <Target className="w-8 h-8" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-100">No Goals Created Yet</h3>
-          <p className="text-xs text-slate-400">
-            Set up target amounts and target dates to calculate exact monthly contribution requirements.
-          </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-500/25 transition-all inline-flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Create First Goal
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {goals.map((goal) => {
-          const req = goalService.calculateGoalRequirement(goal, expectedReturn);
-          const progressPct = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
-          const isAllocatedSufficient = goal.contributionAmount >= req.requiredMonthlyContribution;
-
-          return (
-            <div
-              key={goal.id}
-              className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4 hover:border-slate-700 transition-all relative group"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-base font-bold text-slate-100">{goal.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    Target Date: {goal.targetDate}
-                  </div>
-                </div>
-                <button
-                  onClick={() => deleteGoal(goal.id)}
-                  className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                  title="Delete Goal"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-medium">
-                  <span className="text-slate-400">Current Saved</span>
-                  <span className="text-slate-200">{curr} {goal.currentAmount.toLocaleString()} / {curr} {goal.targetAmount.toLocaleString()} ({progressPct}%)</span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-500 to-indigo-500 rounded-full transition-all duration-500"
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Requirement Analysis */}
-              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-slate-400">Required Monthly</span>
-                  <div className="text-sm font-bold text-indigo-400 mt-0.5">
-                    {curr} {req.requiredMonthlyContribution.toLocaleString()} / mo
-                  </div>
-                </div>
-                <div>
-                  <span className="text-slate-400">Allocated Monthly</span>
-                  <div className="text-sm font-bold text-slate-200 mt-0.5">
-                    {curr} {goal.contributionAmount.toLocaleString()} / mo
-                  </div>
-                </div>
-              </div>
-
-              {/* Track Status Badge */}
-              <div className="flex items-center gap-2 text-xs pt-1">
-                {isAllocatedSufficient ? (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    On Track (Requirement Satisfied)
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    Shortfall: Add {curr} {Math.max(0, req.requiredMonthlyContribution - goal.contributionAmount).toLocaleString()} / mo
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="p-5"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Goals tracked</p><p className="mt-3 font-mono-numbers text-2xl font-bold text-[var(--text-primary)]">{goals.length}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Saved to your WealthOS workspace.</p></Card>
+        <Card className="p-5"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Total funded</p><p className="mt-3 font-mono-numbers text-2xl font-bold text-[var(--text-primary)]">{money(currency, totalCurrent)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Across all saved goals.</p></Card>
+        <Card variant="accent" className="p-5"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Total targets</p><p className="mt-3 font-mono-numbers text-2xl font-bold text-[var(--text-primary)]">{money(currency, totalTarget)}</p><p className="mt-1 text-xs text-[var(--text-secondary)]">A simple snapshot of what you&apos;re building toward.</p></Card>
       </div>
-      )}
 
-      {/* Add Goal Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
-            <h3 className="text-base font-bold text-slate-100">Add New Financial Goal</h3>
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-              <div>
-                <label className="text-slate-400 block mb-1">Goal Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Buy a Home / Emergency Fund"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+      {goals.length ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{goals.map((goal) => {
+        const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
+        const requirement = goalService.calculateGoalRequirement(goal, financialProfile?.assumptions.expectedAnnualReturn || .08);
+        const onTrack = goal.contributionAmount >= requirement.requiredMonthlyContribution;
+        const completed = goal.currentAmount >= goal.targetAmount;
+        return <Card key={goal.id} hoverEffect className="p-5">
+          <div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"><Target className="h-5 w-5" /></span><div><h2 className="text-sm font-bold text-[var(--text-primary)]">{goal.name}</h2><p className="mt-1 flex items-center gap-1 text-[10px] text-[var(--text-muted)]"><CalendarDays className="h-3 w-3" />{new Date(`${goal.targetDate}T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p></div></div><button onClick={() => remove(goal.id)} disabled={deleting === goal.id} aria-label={`Delete ${goal.name}`} className="rounded-lg p-2 text-[var(--text-muted)] transition hover:bg-[var(--status-danger-bg)] hover:text-[var(--status-danger)] disabled:opacity-50"><Trash2 className="h-4 w-4" /></button></div>
+          <div className="mt-6"><div className="flex items-end justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Funded</p><p className="mt-1 font-mono-numbers text-xl font-bold text-[var(--text-primary)]">{money(currency, goal.currentAmount)}</p></div><p className="text-xs font-semibold text-[var(--text-secondary)]">{progress}%</p></div><ProgressBar value={progress} className="mt-3" /></div>
+          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[var(--border-color)] pt-4"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Target</p><p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{money(currency, goal.targetAmount)}</p></div><div><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Monthly planned</p><p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{money(currency, goal.contributionAmount)}</p></div></div>
+          <div className={`mt-4 flex items-start gap-2 rounded-xl px-3 py-3 text-xs ${completed ? 'bg-[var(--status-success-bg)] text-[var(--status-success)]' : onTrack ? 'bg-[var(--status-success-bg)] text-[var(--status-success)]' : 'bg-[var(--status-warning-bg)] text-[var(--status-warning)]'}`}>{completed ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : onTrack ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />}<span>{completed ? 'Target fully funded.' : onTrack ? `Planned contribution is at or above the modelled ${money(currency, requirement.requiredMonthlyContribution)} monthly requirement.` : `The modelled requirement is ${money(currency, requirement.requiredMonthlyContribution)} per month.`}</span></div>
+        </Card>;
+      })}</div> : <Card className="p-10 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"><Target className="h-7 w-7" /></div><h2 className="mt-5 text-xl font-bold text-[var(--text-primary)]">No goals yet.</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">Create a target and WealthOS will show the amount already funded, the target date, and a modelled contribution requirement.</p><Button className="mt-6" onClick={() => setOpen(true)} leftIcon={<Plus className="h-4 w-4" />}>Create your first goal</Button></Card>}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-400 block mb-1">Target Amount ({curr})</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.targetAmount}
-                    onChange={(e) => setForm({ ...form, targetAmount: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-400 block mb-1">Current Saved ({curr})</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.currentAmount}
-                    onChange={(e) => setForm({ ...form, currentAmount: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-400 block mb-1">Target Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={form.targetDate}
-                    onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-400 block mb-1">Allocated Monthly ({curr})</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.contributionAmount}
-                    onChange={(e) => setForm({ ...form, contributionAmount: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-all font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-all font-semibold"
-                >
-                  Save Goal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {open && <div role="dialog" aria-modal="true" aria-labelledby="goal-title" className="fixed inset-0 z-50 flex items-end bg-black/65 p-4 sm:items-center sm:justify-center"><form onSubmit={submit} className="w-full max-w-lg rounded-3xl border border-[var(--border-color-strong)] bg-[var(--bg-surface)] p-5 shadow-2xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--accent-cyan)]">New goal</p><h2 id="goal-title" className="mt-1 text-xl font-bold text-[var(--text-primary)]">What are you building toward?</h2><p className="mt-1 text-xs text-[var(--text-muted)]">Use the numbers you want to explore in your model.</p></div><button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-surface-elevated)]">Close</button></div><div className="mt-6 grid gap-4 sm:grid-cols-2"><div className="sm:col-span-2"><Input label="Goal name" placeholder="e.g. Laptop, emergency fund" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></div><Input label={`Target amount (${currency})`} type="number" min="1" value={form.targetAmount} onChange={(event) => setForm({ ...form, targetAmount: Number(event.target.value) })} required /><Input label={`Already saved (${currency})`} type="number" min="0" value={form.currentAmount} onChange={(event) => setForm({ ...form, currentAmount: Number(event.target.value) })} required /><Input label="Target date" type="date" value={form.targetDate} onChange={(event) => setForm({ ...form, targetDate: event.target.value })} required /><Input label={`Monthly contribution (${currency})`} type="number" min="0" value={form.contributionAmount} onChange={(event) => setForm({ ...form, contributionAmount: Number(event.target.value) })} required /></div><div className="mt-6 flex justify-end gap-2"><Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" isLoading={saving}>Create goal</Button></div></form></div>}
     </div>
   );
 };

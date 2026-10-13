@@ -1,314 +1,99 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Check, Info, RotateCcw, Save, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { useWealth } from '../../lib/context/WealthContext';
-import { Sliders, RefreshCw, Save, CheckCircle2 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { Button } from '../ui/Button';
+import { Card, CardDescription, CardTitle } from '../ui/Card';
+import { Input } from '../ui/Input';
+import { SliderField } from '../ui/SliderField';
+
+const money = (currency: string, value: number) => `${currency} ${Math.round(value).toLocaleString()}`;
 
 export const SimulatorView: React.FC = () => {
-  const {
-    financialProfile,
-    userProfile,
-    calculationResult,
-    updateFinancialProfile,
-    saveCurrentScenario,
-  } = useWealth();
+  const { financialProfile, userProfile, updateFinancialProfile, calculateProjection } = useWealth();
+  const [prevProfile, setPrevProfile] = useState(financialProfile);
+  const [draft, setDraft] = useState(financialProfile);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const [scenarioName, setScenarioName] = useState('');
-  const [isSaved, setIsSaved] = useState(false);
+  if (financialProfile !== prevProfile) {
+    setPrevProfile(financialProfile);
+    setDraft(financialProfile ? { ...financialProfile, assumptions: { ...financialProfile.assumptions } } : null);
+  }
 
-  if (!financialProfile || !calculationResult) return null;
+  const preview = useMemo(() => (draft ? calculateProjection(draft) : null), [draft, calculateProjection]);
+  if (!draft || !preview || !financialProfile) return null;
 
-  const curr = userProfile?.currency || '$';
-  const assumptions = financialProfile.assumptions;
+  const currency = userProfile?.currency || draft.assumptions.currency;
+  const hasChanges = JSON.stringify(draft) !== JSON.stringify(financialProfile);
+  const change = (updates: Partial<typeof draft>, assumptionUpdates?: Partial<typeof draft.assumptions>) => setDraft({ ...draft, ...updates, assumptions: { ...draft.assumptions, ...assumptionUpdates } });
 
-  const handleReturnChange = (val: number) => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: financialProfile.monthlyContribution,
-      assumptions: { ...assumptions, expectedAnnualReturn: val },
-    });
+  const points = preview.yearlyBreakdown.map((item) => ({ year: item.year, nominal: item.nominalValue, real: item.realValue }));
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateFinancialProfile({
+        income: draft.income,
+        expenses: draft.expenses,
+        savings: draft.savings,
+        investments: draft.investments,
+        debt: draft.debt,
+        monthlyContribution: draft.monthlyContribution,
+        assumptions: draft.assumptions,
+      });
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2200);
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const handleMonthlyContribChange = (val: number) => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: val,
-      assumptions,
-    });
-  };
-
-  const handleInflationChange = (val: number) => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: financialProfile.monthlyContribution,
-      assumptions: { ...assumptions, inflationRate: val },
-    });
-  };
-
-  const handleStepUpChange = (val: number) => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: financialProfile.monthlyContribution,
-      assumptions: { ...assumptions, annualContributionIncrease: val },
-    });
-  };
-
-  const handleDurationChange = (val: number) => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: financialProfile.monthlyContribution,
-      assumptions: { ...assumptions, projectionYears: val },
-    });
-  };
-
-  const handleTimingChange = (timing: 'beginning' | 'end') => {
-    updateFinancialProfile({
-      income: financialProfile.income,
-      expenses: financialProfile.expenses,
-      savings: financialProfile.savings,
-      investments: financialProfile.investments,
-      debt: financialProfile.debt,
-      monthlyContribution: financialProfile.monthlyContribution,
-      assumptions: { ...assumptions, contributionTiming: timing },
-    });
-  };
-
-  const handleSaveScenario = async () => {
-    if (!scenarioName.trim()) return;
-    await saveCurrentScenario(scenarioName.trim());
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
-    setScenarioName('');
-  };
-
-  const chartData = calculationResult.yearlyBreakdown.map((item) => ({
-    year: `Year ${item.year}`,
-    Nominal: item.nominalValue,
-    Real: item.realValue,
-    Invested: item.totalContributions,
-  }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-7">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-indigo-400" />
-            Wealth Simulator & Interactive Inputs
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Adjust financial assumptions in real-time to simulate future compound growth and inflation impact.
-          </p>
+          <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--accent-cyan)]">Interactive model</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">Model your financial future.</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">Change one assumption and watch the projection respond instantly. Save only when you&apos;re ready.</p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Scenario Name (e.g. Aggressive 10%)"
-            value={scenarioName}
-            onChange={(e) => setScenarioName(e.target.value)}
-            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-full sm:w-56"
-          />
-          <button
-            onClick={handleSaveScenario}
-            disabled={!scenarioName.trim()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-all whitespace-nowrap"
-          >
-            {isSaved ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-            {isSaved ? 'Saved!' : 'Save Scenario'}
-          </button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setDraft({ ...financialProfile, assumptions: { ...financialProfile.assumptions } })} leftIcon={<RotateCcw className="h-4 w-4" />}>Reset</Button>
+          <Button size="sm" onClick={save} disabled={!hasChanges} isLoading={saving} leftIcon={saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}>{saved ? 'Saved' : 'Save simulation'}</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Controls Panel */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-5">
-          <h3 className="text-sm font-semibold text-slate-200 border-b border-slate-800 pb-3">
-            Simulation Assumptions
-          </h3>
+      <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+        <Card variant="elevated" className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-3 border-b border-[var(--border-color)] pb-5"><div><CardTitle><SlidersHorizontal className="h-4 w-4 text-[var(--accent-cyan)]" />Simulation controls</CardTitle><CardDescription className="mt-1">Preview changes locally. Supabase is updated only when you save.</CardDescription></div>{hasChanges && <span className="rounded-full bg-[var(--status-warning-bg)] px-2.5 py-1 text-[10px] font-bold text-[var(--status-warning)]">Unsaved</span>}</div>
 
-          {/* Monthly Investment */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Monthly Investment</span>
-              <span className="font-semibold text-indigo-300">{curr} {financialProfile.monthlyContribution.toLocaleString()}</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="10000"
-              step="50"
-              value={financialProfile.monthlyContribution}
-              onChange={(e) => handleMonthlyContribChange(Number(e.target.value))}
-              className="w-full accent-indigo-500"
-            />
+          <div className="mt-6 space-y-6">
+            <SliderField label="Starting savings" value={draft.savings} min={0} max={1000000} step={5000} onChange={(value) => change({ savings: value })} formatValue={(value) => money(currency, value)} />
+            <div className="grid grid-cols-2 gap-3"><Input label={`Savings (${currency})`} type="number" min="0" value={draft.savings} onChange={(e) => change({ savings: Number(e.target.value) })} /><Input label={`Monthly contribution (${currency})`} type="number" min="0" value={draft.monthlyContribution} onChange={(e) => change({ monthlyContribution: Number(e.target.value) })} /></div>
+            <SliderField label="Monthly contribution" value={draft.monthlyContribution} min={0} max={Math.max(100000, draft.income)} step={500} onChange={(value) => change({ monthlyContribution: value })} formatValue={(value) => money(currency, value)} />
+            <SliderField label="Expected annual return" value={draft.assumptions.expectedAnnualReturn * 100} min={0} max={25} step={0.5} onChange={(value) => change({}, { expectedAnnualReturn: value / 100 })} formatValue={(value) => `${value.toFixed(1)}%`} helperText="This is an assumption, not a market forecast." />
+            <SliderField label="Inflation rate" value={draft.assumptions.inflationRate * 100} min={0} max={12} step={0.5} onChange={(value) => change({}, { inflationRate: value / 100 })} formatValue={(value) => `${value.toFixed(1)}%`} />
+            <SliderField label="Projection period" value={draft.assumptions.projectionYears} min={1} max={40} onChange={(value) => change({}, { projectionYears: value })} formatValue={(value) => `${value} years`} />
+            <div><p className="mb-2 text-xs font-semibold text-[var(--text-secondary)]">Contribution timing</p><div className="grid grid-cols-2 gap-2">{(['beginning', 'end'] as const).map((timing) => <button key={timing} type="button" onClick={() => change({}, { contributionTiming: timing })} className={`rounded-xl border px-3 py-2.5 text-xs font-semibold capitalize transition ${draft.assumptions.contributionTiming === timing ? 'border-[var(--accent-cyan)]/35 bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]' : 'border-[var(--border-color)] bg-[var(--bg-surface-soft)] text-[var(--text-secondary)] hover:border-[var(--border-color-hover)]'}`}>{timing} of month</button>)}</div></div>
+          </div>
+        </Card>
+
+        <div className="space-y-5">
+          <motion.div layout className="relative overflow-hidden rounded-2xl border border-[var(--accent-cyan)]/18 bg-[linear-gradient(145deg,var(--accent-cyan-soft),var(--bg-surface))] p-5 sm:p-7">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--accent-cyan-glow)] blur-3xl" />
+            <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-start"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--text-muted)]">Projected wealth</p><p className="mt-3 font-mono-numbers text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl">{money(currency, preview.projectedNominalFutureValue)}</p><p className="mt-2 text-sm text-[var(--text-secondary)]">{draft.assumptions.projectionYears}-year nominal output · {money(currency, preview.projectedRealFutureValue)} in today&apos;s value</p></div><span className={`rounded-full px-3 py-1.5 text-[10px] font-bold ${hasChanges ? 'bg-[var(--status-warning-bg)] text-[var(--status-warning)]' : 'bg-[var(--status-success-bg)] text-[var(--status-success)]'}`}>{hasChanges ? 'Previewing changes' : 'Current plan'}</span></div>
+            <div className="mt-7 h-[310px] w-full"><ResponsiveContainer width="100%" height="100%"><AreaChart data={points} margin={{ top: 12, right: 4, left: -12, bottom: 4 }}><defs><linearGradient id="simNominal" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#63DDF5" stopOpacity=".32" /><stop offset="100%" stopColor="#63DDF5" stopOpacity="0" /></linearGradient></defs><CartesianGrid vertical={false} stroke="rgba(168,180,197,.10)" /><XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} minTickGap={20} /><YAxis axisLine={false} tickLine={false} width={66} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickFormatter={(v) => `${currency} ${(Number(v)/1000).toFixed(0)}k`} /><Tooltip contentStyle={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-color-strong)', borderRadius: 14 }} formatter={(value: unknown, name: unknown) => [money(currency, Number(value)), name === 'nominal' ? 'Projected wealth' : 'Today-value']} /><Area type="monotone" dataKey="nominal" stroke="#63DDF5" strokeWidth={3} fill="url(#simNominal)" /><Area type="monotone" dataKey="real" stroke="#8B7CFF" strokeWidth={2} fill="transparent" /></AreaChart></ResponsiveContainer></div>
+          </motion.div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[['Total contributions', preview.totalInvested], ['Estimated growth', preview.totalInterestEarned], ['Monthly surplus', preview.monthlySurplus]].map(([label, value]) => <Card key={label as string} className="p-5"><p className="text-[10px] font-bold uppercase tracking-[.13em] text-[var(--text-muted)]">{label as string}</p><p className="mt-3 font-mono-numbers text-xl font-bold text-[var(--text-primary)]">{money(currency, Number(value))}</p></Card>)}
           </div>
 
-          {/* Expected Annual Return */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Expected Annual Return</span>
-              <span className="font-semibold text-emerald-400">{(assumptions.expectedAnnualReturn * 100).toFixed(1)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="0.25"
-              step="0.005"
-              value={assumptions.expectedAnnualReturn}
-              onChange={(e) => handleReturnChange(Number(e.target.value))}
-              className="w-full accent-emerald-500"
-            />
-          </div>
-
-          {/* Inflation Rate */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Expected Inflation Rate</span>
-              <span className="font-semibold text-amber-400">{(assumptions.inflationRate * 100).toFixed(1)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="0.12"
-              step="0.005"
-              value={assumptions.inflationRate}
-              onChange={(e) => handleInflationChange(Number(e.target.value))}
-              className="w-full accent-amber-500"
-            />
-          </div>
-
-          {/* Annual Step-Up Increase */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Annual Contribution Step-Up</span>
-              <span className="font-semibold text-violet-400">{(assumptions.annualContributionIncrease * 100).toFixed(0)}% / yr</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="0.20"
-              step="0.01"
-              value={assumptions.annualContributionIncrease}
-              onChange={(e) => handleStepUpChange(Number(e.target.value))}
-              className="w-full accent-violet-500"
-            />
-          </div>
-
-          {/* Projection Duration */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-400">Projection Horizon</span>
-              <span className="font-semibold text-cyan-400">{assumptions.projectionYears} Years</span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="50"
-              step="1"
-              value={assumptions.projectionYears}
-              onChange={(e) => handleDurationChange(Number(e.target.value))}
-              className="w-full accent-cyan-500"
-            />
-          </div>
-
-          {/* Contribution Timing Convention */}
-          <div className="space-y-2">
-            <label className="text-xs text-slate-400">Deposit Timing Convention</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleTimingChange('beginning')}
-                className={`py-1.5 text-xs rounded-lg border font-medium transition-all ${
-                  assumptions.contributionTiming === 'beginning'
-                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                    : 'bg-slate-900 border-slate-800 text-slate-400'
-                }`}
-              >
-                Beginning of Month
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTimingChange('end')}
-                className={`py-1.5 text-xs rounded-lg border font-medium transition-all ${
-                  assumptions.contributionTiming === 'end'
-                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                    : 'bg-slate-900 border-slate-800 text-slate-400'
-                }`}
-              >
-                End of Month
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Visualization Chart */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-200">
-                Interactive Growth Trajectory
-              </h3>
-              <p className="text-xs text-slate-400">
-                Nominal ({curr}{calculationResult.projectedNominalFutureValue.toLocaleString()}) vs Real ({curr}{calculationResult.projectedRealFutureValue.toLocaleString()})
-              </p>
-            </div>
-            <div className="text-right text-xs">
-              <div className="text-emerald-400 font-semibold">
-                + {curr} {calculationResult.totalInterestEarned.toLocaleString()} Interest
-              </div>
-              <div className="text-slate-400">
-                {curr} {calculationResult.totalInvested.toLocaleString()} Invested
-              </div>
-            </div>
-          </div>
-
-          <div className="h-80 w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="year" stroke="#94a3b8" fontSize={11} />
-                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `${curr}${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}
-                  formatter={(val: any) => [`${curr} ${Number(val).toLocaleString()}`, '']}
-                />
-                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                <Line type="monotone" dataKey="Nominal" stroke="#6366f1" strokeWidth={3} dot={false} name="Nominal Value" />
-                <Line type="monotone" dataKey="Real" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Real Value (Inflation-Adj)" />
-                <Line type="monotone" dataKey="Invested" stroke="#94a3b8" strokeWidth={2} dot={false} name="Total Invested" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <Card className="p-5"><div className="flex items-start gap-3"><span className="mt-0.5 rounded-lg bg-[var(--accent-cyan-soft)] p-2 text-[var(--accent-cyan)]"><Info className="h-4 w-4" /></span><div><p className="text-sm font-bold text-[var(--text-primary)]">Read the model, don&apos;t mistake it for a forecast.</p><p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">WealthOS compounds the inputs you provide using a deterministic model. Real-world returns, inflation, and future conditions can differ.</p></div></div></Card>
+          <Card variant="glass" className="p-5"><div className="flex items-center gap-2 text-[var(--accent-violet)]"><Sparkles className="h-4 w-4" /><p className="text-xs font-bold">Exhibition tip</p></div><p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">Try changing only monthly contribution, then open the What-If Lab to show how one variable changes the modeled outcome.</p></Card>
         </div>
       </div>
     </div>

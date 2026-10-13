@@ -1,9 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED_PATHS = ['/', '/dashboard', '/simulator', '/goals', '/scenarios', '/copilot', '/settings', '/onboarding'];
+const PROTECTED_PATHS = ['/dashboard', '/simulator', '/goals', '/scenarios', '/copilot', '/settings', '/onboarding'];
 const AUTH_PATHS = ['/login', '/signup'];
-const VIRTUAL_FEATURE_PATHS = ['/dashboard', '/simulator', '/goals', '/scenarios', '/copilot', '/settings'];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -41,9 +40,6 @@ export async function updateSession(request: NextRequest) {
     (protectedRoute) => path === protectedRoute || path.startsWith(`${protectedRoute}/`)
   );
   const isAuthPath = AUTH_PATHS.some((authRoute) => path === authRoute || path.startsWith(`${authRoute}/`));
-  const isVirtualFeaturePath = VIRTUAL_FEATURE_PATHS.some(
-    (featureRoute) => path === featureRoute || path.startsWith(`${featureRoute}/`)
-  );
 
   if (isProtectedPath && !user) {
     const loginUrl = new URL('/login', request.url);
@@ -52,11 +48,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (isAuthPath && user) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (isVirtualFeaturePath && user) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return supabaseResponse;

@@ -60,10 +60,11 @@ ${userQuery}
       text: response.text,
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Copilot API] Failed to generate AI response:', err);
+    const msg = err instanceof Error ? err.message : 'An error occurred while generating the response.';
     return NextResponse.json(
-      { error: err.message || 'An error occurred while generating the response.' },
+      { error: msg },
       { status: 500 }
     );
   }

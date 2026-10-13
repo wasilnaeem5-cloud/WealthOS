@@ -1,265 +1,133 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ArrowRight, BrainCircuit, CalendarDays, CircleHelp, Landmark, PiggyBank, Sparkles, Target, TrendingUp, Wallet } from 'lucide-react';
 import { useWealth } from '../../lib/context/WealthContext';
-import {
-  Wallet,
-  TrendingUp,
-  PiggyBank,
-  ShieldCheck,
-  ArrowUpRight,
-  Info,
-  Calendar,
-  Zap,
-} from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { KpiCard } from '../ui/KpiCard';
+import { Card, CardDescription, CardTitle } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { ProgressBar } from '../ui/ProgressBar';
+
+const money = (currency: string, value: number) => `${currency} ${Math.round(value).toLocaleString()}`;
 
 export const DashboardView: React.FC = () => {
-  const {
-    userProfile,
-    financialProfile,
-    calculationResult,
-    setActiveTab,
-    dataMode,
-  } = useWealth();
+  const router = useRouter();
+  const { userProfile, financialProfile, calculationResult, goals, setActiveTab } = useWealth();
+
+  const points = useMemo(() => calculationResult?.yearlyBreakdown.map((item) => ({
+    year: item.year,
+    age: item.age,
+    nominal: item.nominalValue,
+    real: item.realValue,
+    contributions: item.totalContributions,
+  })) ?? [], [calculationResult]);
 
   if (!financialProfile || !calculationResult) {
     return (
-      <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-2xl space-y-4 max-w-lg mx-auto my-12">
-        <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 inline-block">
-          <Info className="w-8 h-8" />
+      <Card className="mx-auto my-16 max-w-lg p-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]">
+          <Wallet className="h-7 w-7" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-100">No Financial Profile Found</h3>
-        <p className="text-xs text-slate-400">
-          Please complete your personal financial setup to generate your deterministic projections.
-        </p>
-        <button
-          onClick={() => (window.location.href = '/onboarding')}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-500/25 transition-all"
-        >
-          Start Financial Setup
-        </button>
-      </div>
+        <h2 className="mt-5 text-xl font-bold text-[var(--text-primary)]">Complete your financial picture</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">Add your current situation to generate your first WealthOS projection.</p>
+        <Button className="mt-6" onClick={() => router.push('/onboarding')} rightIcon={<ArrowRight className="h-4 w-4" />}>Start setup</Button>
+      </Card>
     );
   }
 
-  const curr = userProfile?.currency || '$';
+  const currency = userProfile?.currency || financialProfile.assumptions.currency;
   const assumptions = financialProfile.assumptions;
+  const firstName = userProfile?.name?.split(' ')[0] || 'there';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
-  const chartData = calculationResult.yearlyBreakdown.map((item) => ({
-    age: `Age ${item.age}`,
-    year: `Yr ${item.year}`,
-    Nominal: item.nominalValue,
-    Real: item.realValue,
-    Invested: item.totalContributions,
-  }));
+  const drivers = [
+    { label: 'Monthly contribution', value: money(currency, financialProfile.monthlyContribution), copy: 'Planned amount added each month.', icon: PiggyBank },
+    { label: 'Expected return', value: `${(assumptions.expectedAnnualReturn * 100).toFixed(1)}%`, copy: 'An assumption used by the model.', icon: TrendingUp },
+    { label: 'Inflation', value: `${(assumptions.inflationRate * 100).toFixed(1)}%`, copy: 'Used for the today-value view.', icon: Landmark },
+    { label: 'Projection period', value: `${assumptions.projectionYears} years`, copy: 'Your selected modelling horizon.', icon: CalendarDays },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner Notice */}
-      <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-            <Info className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-slate-200">
-              Person-Based Financial Projection Active
-            </h3>
-            <p className="text-xs text-slate-400">
-              Deterministic calculations based on current age {userProfile?.age}, {(assumptions.expectedAnnualReturn * 100).toFixed(1)}% return assumption, and {(assumptions.inflationRate * 100).toFixed(1)}% inflation.
-            </p>
-          </div>
+    <div className="space-y-7">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .35 }} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-[var(--accent-cyan)]"><span className="h-1.5 w-1.5 rounded-full bg-[var(--accent-cyan)] shadow-[0_0_14px_var(--accent-cyan)]" />Your financial picture</div>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">{greeting}, {firstName}.</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">See your current position, projected trajectory, and the assumptions shaping the model.</p>
         </div>
-        <div className="text-xs px-3 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">
-          {assumptions.projectionYears}-Year Horizon
-        </div>
+        <Button variant="secondary" size="sm" onClick={() => setActiveTab('scenarios')} leftIcon={<Sparkles className="h-4 w-4" />} rightIcon={<ArrowRight className="h-3.5 w-3.5" />}>Run a What-If</Button>
+      </motion.div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Net worth" value={calculationResult.netWorthCurrent} currency={currency} icon={<Wallet className="h-4 w-4" />} subtext="Savings + investments − debt" />
+        <KpiCard label="Monthly surplus" value={calculationResult.monthlySurplus} currency={currency} icon={<PiggyBank className="h-4 w-4" />} subtext="Income less monthly expenses" />
+        <KpiCard label="Savings rate" value={`${calculationResult.savingsRate}%`} icon={<TrendingUp className="h-4 w-4" />} subtext="Based on monthly contribution" />
+        <KpiCard label={`Projected wealth · ${assumptions.projectionYears}y`} value={calculationResult.projectedNominalFutureValue} currency={currency} icon={<Target className="h-4 w-4" />} highlight subtext="Nominal model output" />
       </div>
 
-      {/* Primary KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Net Worth */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Current Net Worth
-            </span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-100">
-              {curr} {calculationResult.netWorthCurrent.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400 mt-1">
-              Savings ({curr}{financialProfile.savings.toLocaleString()}) + Investments ({curr}{financialProfile.investments.toLocaleString()}) - Debt ({curr}{financialProfile.debt.toLocaleString()})
-            </div>
-          </div>
-        </div>
-
-        {/* Monthly Surplus */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Monthly Surplus
-            </span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-              <PiggyBank className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-100">
-              {curr} {calculationResult.monthlySurplus.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400 mt-1">
-              Income ({curr}{financialProfile.income.toLocaleString()}) - Expenses ({curr}{financialProfile.expenses.toLocaleString()})
-            </div>
-          </div>
-        </div>
-
-        {/* Savings Rate */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Savings / Invest Rate
-            </span>
-            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-100">
-              {calculationResult.savingsRate}%
-            </div>
-            <div className="text-xs text-slate-400 mt-1">
-              Allocated Monthly: {curr}{financialProfile.monthlyContribution.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Projected Wealth */}
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-slate-900/60 border border-indigo-500/30 relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-indigo-300 uppercase tracking-wider">
-              Projected Wealth ({assumptions.projectionYears}y)
-            </span>
-            <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-indigo-200">
-              {curr} {calculationResult.projectedNominalFutureValue.toLocaleString()}
-            </div>
-            <div className="text-xs text-indigo-300/80 mt-1">
-              Real (Inflation-Adj): {curr} {calculationResult.projectedRealFutureValue.toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Projection Chart */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <Card variant="elevated" className="overflow-hidden p-0">
+        <div className="flex flex-col justify-between gap-4 border-b border-[var(--border-color)] p-5 sm:flex-row sm:items-start sm:p-6">
           <div>
-            <h2 className="text-base font-semibold text-slate-100">
-              Financial Trajectory Projection
-            </h2>
-            <p className="text-xs text-slate-400">
-              Comparing Total Invested vs Nominal Future Value vs Inflation-Adjusted Real Value over time.
-            </p>
+            <div className="flex items-center gap-2"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"><TrendingUp className="h-4 w-4" /></span><div><CardTitle>Projected wealth</CardTitle><CardDescription className="mt-0.5">A deterministic view of your selected assumptions.</CardDescription></div></div>
           </div>
-          <button
-            onClick={() => setActiveTab('simulator')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 text-xs font-medium transition-all"
-          >
-            Open Wealth Simulator
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex flex-wrap gap-2 text-[10px] font-semibold">
+            <span className="rounded-full border border-[var(--accent-cyan)]/20 bg-[var(--accent-cyan-soft)] px-2.5 py-1.5 text-[var(--accent-cyan)]">Nominal</span>
+            <span className="rounded-full border border-[var(--accent-violet)]/20 bg-[var(--accent-violet-soft)] px-2.5 py-1.5 text-[var(--accent-violet)]">Inflation-adjusted</span>
+          </div>
         </div>
+        <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1fr_270px]">
+          <div className="min-w-0">
+            <div className="mb-2 flex items-end justify-between gap-3">
+              <div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--text-muted)]">End of horizon</p><p className="mt-1 font-mono-numbers text-2xl font-bold text-[var(--text-primary)]">{money(currency, calculationResult.projectedNominalFutureValue)}</p></div>
+              <p className="text-right text-[11px] text-[var(--text-muted)]">{money(currency, calculationResult.projectedRealFutureValue)} in today&apos;s value</p>
+            </div>
+            <div className="h-[310px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={points} margin={{ top: 10, right: 4, left: -12, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="dashboardNominal" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#63DDF5" stopOpacity=".34" /><stop offset="100%" stopColor="#63DDF5" stopOpacity="0" /></linearGradient>
+                    <linearGradient id="dashboardReal" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#8B7CFF" stopOpacity=".18" /><stop offset="100%" stopColor="#8B7CFF" stopOpacity="0" /></linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="rgba(168,180,197,.10)" />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} minTickGap={22} />
+                  <YAxis axisLine={false} tickLine={false} width={64} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickFormatter={(v) => `${currency} ${(Number(v) / 1000).toFixed(0)}k`} />
+                  <Tooltip contentStyle={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-color-strong)', borderRadius: 14, color: 'var(--text-primary)' }} labelFormatter={(label) => `Year ${label}`} formatter={(value: unknown, name: unknown) => [money(currency, Number(value)), name === 'nominal' ? 'Projected wealth' : 'Today-value'] } />
+                  <Area className="chart-glow" type="monotone" dataKey="nominal" stroke="#63DDF5" strokeWidth={3} fill="url(#dashboardNominal)" />
+                  <Area type="monotone" dataKey="real" stroke="#8B7CFF" strokeWidth={2} fill="url(#dashboardReal)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
-        <div className="h-72 w-full pt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorNominal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorReal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="age" stroke="#94a3b8" fontSize={12} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `${curr}${(v / 1000).toFixed(0)}k`} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}
-                formatter={(val: any) => [`${curr} ${Number(val).toLocaleString()}`, '']}
-              />
-              <Area type="monotone" dataKey="Nominal" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorNominal)" name="Nominal Value" />
-              <Area type="monotone" dataKey="Real" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorReal)" name="Real Value (Inflation-Adj)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface-soft)] p-4 sm:p-5">
+            <div className="flex items-center gap-2"><CircleHelp className="h-4 w-4 text-[var(--accent-cyan)]" /><p className="text-xs font-bold text-[var(--text-primary)]">What drives the model?</p></div>
+            <div className="mt-4 space-y-3">
+              {drivers.map(({ label, value, copy, icon: Icon }) => <div key={label} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-3"><div className="flex items-start gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"><Icon className="h-4 w-4" /></span><div className="min-w-0"><div className="flex items-center justify-between gap-2"><p className="text-[11px] font-semibold text-[var(--text-secondary)]">{label}</p><p className="font-mono text-[11px] font-bold text-[var(--text-primary)]">{value}</p></div><p className="mt-1 text-[10px] leading-4 text-[var(--text-muted)]">{copy}</p></div></div></div>)}
+            </div>
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Quick Action Navigation Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          onClick={() => setActiveTab('goals')}
-          className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 text-left hover:border-slate-700 hover:bg-slate-900/60 transition-all flex items-start gap-4"
-        >
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400">
-            <Calendar className="w-5 h-5" />
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3"><div><CardTitle><Target className="h-4 w-4 text-[var(--accent-cyan)]" />Your goals</CardTitle><CardDescription className="mt-1">Track what you&apos;re building toward.</CardDescription></div><Button variant="ghost" size="sm" onClick={() => setActiveTab('goals')}>View all</Button></div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {goals.slice(0, 2).map((goal) => {
+              const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
+              return <div key={goal.id} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface-soft)] p-4 transition hover:border-[var(--border-color-hover)]"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-[var(--text-primary)]">{goal.name}</p><p className="mt-1 text-[11px] text-[var(--text-muted)]"><CalendarDays className="mr-1 inline h-3.5 w-3.5" />Target {new Date(`${goal.targetDate}T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p></div><span className="rounded-lg bg-[var(--accent-cyan-soft)] p-2 text-[var(--accent-cyan)]"><Target className="h-4 w-4" /></span></div><ProgressBar value={progress} className="mt-4" /><div className="mt-2 flex justify-between text-[11px] text-[var(--text-secondary)]"><span>{money(currency, goal.currentAmount)}</span><span>{money(currency, goal.targetAmount)}</span></div></div>;
+            })}
+            {goals.length === 0 && <div className="rounded-2xl border border-dashed border-[var(--border-color-strong)] p-7 text-center md:col-span-2"><Target className="mx-auto h-6 w-6 text-[var(--text-muted)]" /><p className="mt-3 text-sm font-semibold text-[var(--text-primary)]">No goals yet</p><p className="mt-1 text-xs text-[var(--text-muted)]">Create a goal to explore how your current plan supports it.</p><Button size="sm" className="mt-4" onClick={() => setActiveTab('goals')}>Create a goal</Button></div>}
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-slate-200">Goal Planner</h4>
-            <p className="text-xs text-slate-400 mt-1">
-              Track target deadlines, required monthly contributions, and achievement gap.
-            </p>
-          </div>
-        </button>
+        </Card>
 
-        <button
-          onClick={() => setActiveTab('scenarios')}
-          className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 text-left hover:border-slate-700 hover:bg-slate-900/60 transition-all flex items-start gap-4"
-        >
-          <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400">
-            <Zap className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-slate-200">What-If Lab</h4>
-            <p className="text-xs text-slate-400 mt-1">
-              Compare baseline vs alternative return rates and step-up scenarios side-by-side.
-            </p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('copilot')}
-          className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 text-left hover:border-slate-700 hover:bg-slate-900/60 transition-all flex items-start gap-4"
-        >
-          <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400">
-            <Info className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-slate-200">AI Copilot</h4>
-            <p className="text-xs text-slate-400 mt-1">
-              Ask questions to receive structured explanations grounded strictly in engine outputs.
-            </p>
-          </div>
-        </button>
+        <Card variant="glass" className="relative overflow-hidden p-6">
+          <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[var(--accent-violet-glow)] blur-3xl" />
+          <div className="relative"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-violet-soft)] text-[var(--accent-violet)]"><BrainCircuit className="h-5 w-5" /></span><h2 className="mt-5 text-lg font-bold text-[var(--text-primary)]">Understand the result</h2><p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">Copilot can explain your model outputs in plain language. The financial engine remains the source of truth.</p><Button variant="accent" className="mt-6 w-full" onClick={() => setActiveTab('copilot')} rightIcon={<ArrowRight className="h-4 w-4" />}>Ask Copilot</Button></div>
+        </Card>
       </div>
     </div>
   );

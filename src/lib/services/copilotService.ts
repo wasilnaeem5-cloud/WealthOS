@@ -2,7 +2,6 @@ import { AIChatMessage, AIConversation, FinancialProfile, ScenarioCalculationRes
 import { RepositoryFactory } from '../repositories/factory';
 import { buildMinimalAIContext } from '../ai/context';
 import { validateAIResponse } from '../ai/guardrails';
-import { SYSTEM_PROMPT } from '../ai/prompts';
 import { generateId } from '../utils/id';
 
 export class CopilotService {
@@ -64,9 +63,10 @@ export class CopilotService {
       }
 
       rawAiContent = data.text;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       console.error('[CopilotService] AI generation error:', err);
-      rawAiContent = `I'm sorry, I'm currently unable to connect to my AI engine. Please ensure that \`GEMINI_API_KEY\` is configured correctly on the server.\n\nError: ${err.message}`;
+      rawAiContent = `I'm sorry, I'm currently unable to connect to my AI engine. Please ensure that \`GEMINI_API_KEY\` is configured correctly on the server.\n\nError: ${message}`;
     }
 
     // 4. Run Guardrail Validation

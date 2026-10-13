@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { supabaseClient } from '../supabase/client';
 import { getDataMode } from '../repositories/factory';
 import { DataMode } from '../../types';
@@ -28,28 +28,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const profileService = new ProfileService();
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    if (getDataMode() === 'local') {
+      const savedAuth = typeof window !== 'undefined' ? localStorage.getItem('wealthos_demo_auth') : null;
+      if (savedAuth === 'logged_out') return null;
+      return {
+        id: DEMO_USER_ID,
+        email: 'alex.morgan@example.com',
+        name: initialDemoProfile.name,
+      };
+    }
+    return null;
+  });
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [dataMode, setDataMode] = useState<DataMode>('local');
+  const [loading, setLoading] = useState<boolean>(() => getDataMode() === 'local' ? false : true);
+  const [dataMode] = useState<DataMode>(getDataMode);
 
   useEffect(() => {
     const mode = getDataMode();
-    setDataMode(mode);
 
     if (mode === 'local') {
-      // Initialize with demo user in local mode
-      const savedAuth = typeof window !== 'undefined' ? localStorage.getItem('wealthos_demo_auth') : null;
-      if (savedAuth === 'logged_out') {
-        setUser(null);
-      } else {
-        setUser({
-          id: DEMO_USER_ID,
-          email: 'alex.morgan@example.com',
-          name: initialDemoProfile.name,
-        });
-      }
-      setLoading(false);
       return;
     }
 
@@ -145,8 +143,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.session) {
         try {
           await profileService.updateProfile(userId, { name, age: 26, currency: 'USD', onboardingCompleted: false });
-        } catch (profileErr: any) {
-          console.warn('[AUTH] Profile creation notice:', profileErr.message);
+        } catch (profileErr: unknown) {
+          const msg = profileErr instanceof Error ? profileErr.message : String(profileErr);
+          console.warn('[AUTH] Profile creation notice:', msg);
         }
         setUser({
           id: userId,
@@ -157,9 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         return { error: null, userId, requiresConfirmation: true };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[AUTH] SignUp exception:', err);
-      return { error: err.message || 'An unexpected error occurred during signup' };
+      const msg = err instanceof Error ? err.message : 'An unexpected error occurred during signup';
+      return { error: msg };
     }
   };
 
@@ -192,8 +192,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message || 'Failed to sign in' };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to sign in';
+      return { error: msg };
     }
   };
 
