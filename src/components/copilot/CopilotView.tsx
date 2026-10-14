@@ -31,7 +31,7 @@ export const CopilotView: React.FC = () => {
       <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--accent-violet)]">Intelligence layer</p><h1 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">Understand your projection.</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">Ask questions about your numbers, assumptions, goals, and scenarios. Copilot explains the model—it doesn&apos;t replace it.</p></div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_280px]">
-        <Card className="flex min-h-[640px] flex-col overflow-hidden p-0">
+        <Card className="flex min-h-[480px] flex-col overflow-hidden p-0 sm:min-h-[640px]">
           <div className="flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-surface-soft)] p-4 sm:p-5"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-violet-soft)] text-[var(--accent-violet)]"><Sparkles className="h-5 w-5" /></span><div><p className="text-sm font-bold text-[var(--text-primary)]">WealthOS Copilot</p><p className="text-[10px] text-[var(--text-muted)]">Using your current WealthOS context</p></div></div><span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--status-success-bg)] px-2.5 py-1 text-[10px] font-bold text-[var(--status-success)]"><ShieldCheck className="h-3.5 w-3.5" />Grounded</span></div>
 
           <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">

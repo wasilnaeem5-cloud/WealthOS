@@ -306,7 +306,7 @@ export const ScenariosView: React.FC = () => {
       {/* Main grid */}
       <div className="grid gap-6 xl:grid-cols-[350px_minmax(0,1fr)]">
         {/* Controls card */}
-        <Card variant="elevated" className="p-5 sm:p-6">
+        <Card variant="elevated" className="p-4 sm:p-6">
           <div className="border-b border-[var(--border-color)] pb-5">
             <CardTitle>
               <Sparkles className="h-4 w-4 text-[var(--accent-violet)]" />
@@ -446,7 +446,7 @@ export const ScenariosView: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-7 h-[330px]">
+            <div className="mt-7 h-[220px] sm:h-[330px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 4, left: -10, bottom: 4 }}>
                   <defs>
@@ -470,7 +470,7 @@ export const ScenariosView: React.FC = () => {
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    width={66}
+                    width={60}
                     tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                     tickFormatter={(v) => `${currency} ${(Number(v) / 1000).toFixed(0)}k`}
                   />

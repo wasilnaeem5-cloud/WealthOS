@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, CircleAlert, Plus, Target, Trash2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, CircleAlert, Plus, Target, Trash2, X } from 'lucide-react';
 import { useWealth } from '../../lib/context/WealthContext';
 import { GoalService } from '../../lib/services/goalService';
 import { Button } from '../ui/Button';
@@ -67,7 +67,41 @@ export const GoalsView: React.FC = () => {
         </Card>;
       })}</div> : <Card className="p-10 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"><Target className="h-7 w-7" /></div><h2 className="mt-5 text-xl font-bold text-[var(--text-primary)]">No goals yet.</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">Create a target and WealthOS will show the amount already funded, the target date, and a modelled contribution requirement.</p><Button className="mt-6" onClick={() => setOpen(true)} leftIcon={<Plus className="h-4 w-4" />}>Create your first goal</Button></Card>}
 
-      {open && <div role="dialog" aria-modal="true" aria-labelledby="goal-title" className="fixed inset-0 z-50 flex items-end bg-black/65 p-4 sm:items-center sm:justify-center"><form onSubmit={submit} className="w-full max-w-lg rounded-3xl border border-[var(--border-color-strong)] bg-[var(--bg-surface)] p-5 shadow-2xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--accent-cyan)]">New goal</p><h2 id="goal-title" className="mt-1 text-xl font-bold text-[var(--text-primary)]">What are you building toward?</h2><p className="mt-1 text-xs text-[var(--text-muted)]">Use the numbers you want to explore in your model.</p></div><button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-surface-elevated)]">Close</button></div><div className="mt-6 grid gap-4 sm:grid-cols-2"><div className="sm:col-span-2"><Input label="Goal name" placeholder="e.g. Laptop, emergency fund" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></div><Input label={`Target amount (${currency})`} type="number" min="1" value={form.targetAmount} onChange={(event) => setForm({ ...form, targetAmount: Number(event.target.value) })} required /><Input label={`Already saved (${currency})`} type="number" min="0" value={form.currentAmount} onChange={(event) => setForm({ ...form, currentAmount: Number(event.target.value) })} required /><Input label="Target date" type="date" value={form.targetDate} onChange={(event) => setForm({ ...form, targetDate: event.target.value })} required /><Input label={`Monthly contribution (${currency})`} type="number" min="0" value={form.contributionAmount} onChange={(event) => setForm({ ...form, contributionAmount: Number(event.target.value) })} required /></div><div className="mt-6 flex justify-end gap-2"><Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" isLoading={saving}>Create goal</Button></div></form></div>}
+      {open && (
+        <div role="dialog" aria-modal="true" aria-labelledby="goal-title" className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 p-3 sm:items-center sm:p-4">
+          <div className="fixed inset-0" onClick={() => setOpen(false)} aria-hidden="true" />
+          <form onSubmit={submit} className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-[var(--border-color-strong)] bg-[var(--bg-surface)] p-5 shadow-2xl sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--accent-cyan)]">New goal</p>
+                <h2 id="goal-title" className="mt-1 text-xl font-bold text-[var(--text-primary)]">What are you building toward?</h2>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">Use the numbers you want to explore in your model.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close dialog"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-muted)] transition hover:bg-[var(--bg-surface-elevated)] hover:text-[var(--text-primary)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Input label="Goal name" placeholder="e.g. Laptop, emergency fund" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
+              </div>
+              <Input label={`Target amount (${currency})`} type="number" min="1" value={form.targetAmount} onChange={(event) => setForm({ ...form, targetAmount: Number(event.target.value) })} required />
+              <Input label={`Already saved (${currency})`} type="number" min="0" value={form.currentAmount} onChange={(event) => setForm({ ...form, currentAmount: Number(event.target.value) })} required />
+              <Input label="Target date" type="date" value={form.targetDate} onChange={(event) => setForm({ ...form, targetDate: event.target.value })} required />
+              <Input label={`Monthly contribution (${currency})`} type="number" min="0" value={form.contributionAmount} onChange={(event) => setForm({ ...form, contributionAmount: Number(event.target.value) })} required />
+            </div>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" isLoading={saving}>Create goal</Button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

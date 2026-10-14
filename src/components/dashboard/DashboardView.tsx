@@ -85,7 +85,7 @@ export const DashboardView: React.FC = () => {
               <div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--text-muted)]">End of horizon</p><p className="mt-1 font-mono-numbers text-2xl font-bold text-[var(--text-primary)]">{money(currency, calculationResult.projectedNominalFutureValue)}</p></div>
               <p className="text-right text-[11px] text-[var(--text-muted)]">{money(currency, calculationResult.projectedRealFutureValue)} in today&apos;s value</p>
             </div>
-            <div className="h-[310px] w-full">
+            <div className="h-[220px] w-full sm:h-[310px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={points} margin={{ top: 10, right: 4, left: -12, bottom: 4 }}>
                   <defs>
