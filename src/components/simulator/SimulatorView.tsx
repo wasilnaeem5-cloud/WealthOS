@@ -3,7 +3,8 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Check, Info, RotateCcw, Save, SlidersHorizontal, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Check, Info, RotateCcw, Save, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { useWealth } from '../../lib/context/WealthContext';
 import { Button } from '../ui/Button';
 import { Card, CardDescription, CardTitle } from '../ui/Card';
@@ -25,7 +26,22 @@ export const SimulatorView: React.FC = () => {
   }
 
   const preview = useMemo(() => (draft ? calculateProjection(draft) : null), [draft, calculateProjection]);
-  if (!draft || !preview || !financialProfile) return null;
+  if (!draft || !preview || !financialProfile) {
+    return (
+      <Card className="mx-auto my-16 max-w-lg p-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]">
+          <SlidersHorizontal className="h-7 w-7" />
+        </div>
+        <h2 className="mt-5 text-xl font-bold text-[var(--text-primary)]">Configure your financial profile</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">The Wealth Simulator requires baseline financial data to run simulations.</p>
+        <div className="mt-6 flex justify-center">
+          <Link href="/onboarding">
+            <Button rightIcon={<ArrowRight className="h-4 w-4" />}>Start onboarding</Button>
+          </Link>
+        </div>
+      </Card>
+    );
+  }
 
   const currency = userProfile?.currency || draft.assumptions.currency;
   const hasChanges = JSON.stringify(draft) !== JSON.stringify(financialProfile);
