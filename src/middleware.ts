@@ -32,5 +32,8 @@ export const config = {
     '/onboarding/:path*',
     '/login',
     '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/resend-confirmation',
   ],
 };

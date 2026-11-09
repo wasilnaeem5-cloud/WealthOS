@@ -7,6 +7,7 @@ import { getDataMode } from '../repositories/factory';
 import { DataMode } from '../../types';
 import { ProfileService } from '../services/profileService';
 import { DEMO_USER_ID, initialDemoProfile } from '../repositories/local/initialData';
+import { getAuthCallbackUrl } from '../auth/url';
 
 export interface AuthUser {
   id: string;
@@ -20,8 +21,22 @@ interface AuthContextType {
   loading: boolean;
   dataMode: DataMode;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; userId?: string; requiresConfirmation?: boolean }>;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
   signOut: () => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<{
+    error: string | null;
+    message?: string;
+    alreadyConfirmed?: boolean;
+    rateLimited?: boolean;
+  }>;
+  resetPasswordForEmail: (email: string) => Promise<{
+    error: string | null;
+    message?: string;
+    rateLimited?: boolean;
+  }>;
+  updatePassword: (password: string) => Promise<{
+    error: string | null;
+  }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -117,7 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       console.log('[AUTH] Initiating Supabase signUp for:', email);
-      const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined;
+      const callbackUrl = getAuthCallbackUrl();
+      console.log('[AUTH] Using emailRedirectTo callback URL:', callbackUrl);
+
       const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
@@ -183,7 +200,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (error) return { error: error.message };
+      if (error) {
+        const isNotConfirmed = error.message.toLowerCase().includes('email not confirmed');
+        return { error: error.message, emailNotConfirmed: isNotConfirmed };
+      }
+
       if (data.user) {
         setUser({
           id: data.user.id,
@@ -194,6 +215,153 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: null };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in';
+      return { error: msg };
+    }
+  };
+
+  const resendConfirmationEmail = async (email: string) => {
+    const currentMode = getDataMode();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return { error: 'Please enter a valid email address.' };
+    }
+
+    if (currentMode === 'local') {
+      return {
+        error: null,
+        message: 'WealthOS is running in local demo mode. Email verification is simulated and not required.',
+      };
+    }
+
+    try {
+      const callbackUrl = getAuthCallbackUrl();
+      console.log('[AUTH] Requesting confirmation email for:', normalizedEmail, 'redirecting to:', callbackUrl);
+
+      const { error } = await supabaseClient.auth.resend({
+        type: 'signup',
+        email: normalizedEmail,
+        options: {
+          emailRedirectTo: callbackUrl,
+        },
+      });
+
+      if (error) {
+        console.warn('[AUTH] Supabase resend error:', error.message, error.status);
+        const lower = error.message.toLowerCase();
+
+        if (lower.includes('already confirmed') || lower.includes('already verified')) {
+          return {
+            error: null,
+            alreadyConfirmed: true,
+            message: 'Your email address is already verified. You can sign in immediately.',
+          };
+        }
+
+        if (
+          error.status === 429 ||
+          lower.includes('rate limit') ||
+          lower.includes('too many requests') ||
+          lower.includes('for security purposes')
+        ) {
+          return {
+            error: 'Rate limit reached: For security, Supabase limits how frequently confirmation emails can be requested. Please wait a few minutes before trying again.',
+            rateLimited: true,
+          };
+        }
+
+        return { error: error.message };
+      }
+
+      return {
+        error: null,
+        message: 'Confirmation email requested! If an unconfirmed account exists for this address, a fresh verification link has been sent. Please check your inbox and spam folder.',
+      };
+    } catch (err: unknown) {
+      console.error('[AUTH] Resend exception:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to request confirmation email.';
+      return { error: msg };
+    }
+  };
+
+  const resetPasswordForEmail = async (email: string) => {
+    const currentMode = getDataMode();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return { error: 'Please enter a valid email address.' };
+    }
+
+    if (currentMode === 'local') {
+      return {
+        error: null,
+        message: 'WealthOS is running in local demo mode. A simulated password reset link has been dispatched.',
+      };
+    }
+
+    try {
+      const callbackUrl = getAuthCallbackUrl('/reset-password');
+      console.log('[AUTH] Requesting password reset for:', normalizedEmail, 'redirecting to:', callbackUrl);
+
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: callbackUrl,
+      });
+
+      if (error) {
+        console.warn('[AUTH] Supabase resetPasswordForEmail error:', error.message, error.status);
+        const lower = error.message.toLowerCase();
+
+        if (
+          error.status === 429 ||
+          lower.includes('rate limit') ||
+          lower.includes('too many requests') ||
+          lower.includes('for security purposes')
+        ) {
+          return {
+            error: 'Rate limit reached: For security, Supabase limits how frequently password reset emails can be requested. Please wait a few minutes before trying again.',
+            rateLimited: true,
+          };
+        }
+
+        return { error: error.message };
+      }
+
+      return {
+        error: null,
+        message: 'Password reset link sent! If an account exists for this address, you will receive an email shortly with instructions to reset your password.',
+      };
+    } catch (err: unknown) {
+      console.error('[AUTH] ResetPassword exception:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to request password reset.';
+      return { error: msg };
+    }
+  };
+
+  const updatePassword = async (password: string) => {
+    const currentMode = getDataMode();
+
+    if (!password || password.length < 6) {
+      return { error: 'Password must be at least 6 characters.' };
+    }
+
+    if (currentMode === 'local') {
+      return { error: null };
+    }
+
+    try {
+      console.log('[AUTH] Updating user password...');
+      const { error } = await supabaseClient.auth.updateUser({ password });
+
+      if (error) {
+        console.error('[AUTH] Update password error:', error.message);
+        return { error: error.message };
+      }
+
+      console.log('[AUTH] Password updated successfully');
+      return { error: null };
+    } catch (err: unknown) {
+      console.error('[AUTH] Update password exception:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to update password.';
       return { error: msg };
     }
   };
@@ -227,6 +395,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
+        resendConfirmationEmail,
+        resetPasswordForEmail,
+        updatePassword,
       }}
     >
       {children}

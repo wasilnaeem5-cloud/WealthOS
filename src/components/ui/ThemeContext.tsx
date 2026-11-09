@@ -13,15 +13,25 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    const savedTheme = localStorage.getItem('wealthos_theme') as Theme | null;
-    return savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
-  });
+  // SSR-safe: always start with 'dark' so server and first client render agree.
+  // After mount we read localStorage and patch the theme if the user has a
+  // saved preference — this avoids the hydration mismatch entirely.
+  const [theme, setThemeState] = useState<Theme>('dark');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Read the persisted preference on the client side only
+    const savedTheme = localStorage.getItem('wealthos_theme') as Theme | null;
+    const resolved = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
+    setThemeState(resolved);
+    document.documentElement.classList.toggle('light', resolved === 'light');
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     document.documentElement.classList.toggle('light', theme === 'light');
-  }, [theme]);
+  }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -35,7 +45,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: mounted ? theme : 'dark', toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
