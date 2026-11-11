@@ -39,9 +39,9 @@ type CurrencyOption = 'USD' | 'PKR' | 'EUR' | 'GBP';
 
 const CURRENCIES: Record<CurrencyOption, { symbol: string; label: string; defaultInitial: number; defaultMonthly: number }> = {
   USD: { symbol: '$', label: 'USD ($)', defaultInitial: 15000, defaultMonthly: 800 },
-  PKR: { symbol: 'PKR', label: 'PKR (₨)', defaultInitial: 500000, defaultMonthly: 35000 },
-  EUR: { symbol: '€', label: 'EUR (€)', defaultInitial: 12000, defaultMonthly: 700 },
-  GBP: { symbol: '£', label: 'GBP (£)', defaultInitial: 10000, defaultMonthly: 650 },
+  PKR: { symbol: 'PKR', label: 'PKR (Ã¢â€šÂ¨)', defaultInitial: 500000, defaultMonthly: 35000 },
+  EUR: { symbol: 'Ã¢â€šÂ¬', label: 'EUR (Ã¢â€šÂ¬)', defaultInitial: 12000, defaultMonthly: 700 },
+  GBP: { symbol: 'Ã‚Â£', label: 'GBP (Ã‚Â£)', defaultInitial: 10000, defaultMonthly: 650 },
 };
 
 export default function LandingPage() {
@@ -136,8 +136,8 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="app-shell overflow-x-hidden selection:bg-[var(--accent-cyan)] selection:text-[#07111F]">
-      {/* ─── Top Navigation Bar ─────────────────────────────────────────── */}
+    <main className="app-shell overflow-x-hidden selection:bg-[var(--accent-cyan)] selection:text-[#071210]">
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Top Navigation Bar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <header className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-[var(--bg-main)]/90 backdrop-blur-xl transition-colors">
         <div className="mx-auto flex max-w-[1420px] items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
           <Link href="/" className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function LandingPage() {
                 variant="primary"
                 size="sm"
                 leftIcon={<FlaskConical className="h-3.5 w-3.5" />}
-                className="shadow-lg shadow-[#0891B2]/20 dark:shadow-[#63DDF5]/20"
+                className="shadow-lg shadow-[#0891B2]/20 dark:shadow-[#10B981]/20"
               >
                 <span className="hidden sm:inline">Launch Demo</span>
                 <span className="sm:hidden">Demo</span>
@@ -250,14 +250,14 @@ export default function LandingPage() {
         </AnimatePresence>
       </header>
 
-      {/* ─── Hero Section ─────────────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Hero Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section className="app-content relative mx-auto max-w-[1420px] px-5 pb-16 pt-12 sm:px-8 lg:px-12 lg:pb-24 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_.92fr]">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             {/* Top pill badge */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan-soft)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[.18em] text-[var(--accent-cyan)]">
               <span className="h-2 w-2 rounded-full bg-[var(--accent-cyan)] shadow-[0_0_8px_var(--accent-cyan)]" />
-              Deterministic Simulation · Grounded AI Explanation
+              Deterministic Simulation Ã‚Â· Grounded AI Explanation
             </div>
 
             <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-[-.04em] text-[var(--text-primary)] sm:text-5xl lg:text-[68px]">
@@ -268,7 +268,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">
-              WealthOS turns your current financial situation, contributions, and assumptions into an interactive, multi-year projection you can explore, compare, and explain.
+              Finance Manager turns your current financial situation, contributions, and assumptions into an interactive, multi-year projection you can explore, compare, and explain.
             </p>
 
             {/* Value Proposition Pills */}
@@ -321,7 +321,7 @@ export default function LandingPage() {
                     {formatMoney(calculation.nominalFutureValue)}
                   </h3>
                   <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
-                    {projectionYears}-year nominal output · {formatMoney(calculation.realFutureValue)} in today&apos;s purchasing power
+                    {projectionYears}-year nominal output Ã‚Â· {formatMoney(calculation.realFutureValue)} in today&apos;s purchasing power
                   </p>
                 </div>
                 <div className="rounded-2xl border border-[var(--accent-cyan)]/25 bg-[var(--accent-cyan-soft)] p-3 text-[var(--accent-cyan)]">
@@ -335,12 +335,12 @@ export default function LandingPage() {
                   <AreaChart data={chartData} margin={{ left: -14, right: 4, top: 8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#63DDF5" stopOpacity={0.36} />
-                        <stop offset="100%" stopColor="#63DDF5" stopOpacity={0.0} />
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.36} />
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0.0} />
                       </linearGradient>
                       <linearGradient id="heroRealGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#8B7CFF" stopOpacity={0.2} />
-                        <stop offset="100%" stopColor="#8B7CFF" stopOpacity={0.0} />
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} stroke="rgba(168,180,197,.08)" />
@@ -364,8 +364,8 @@ export default function LandingPage() {
                         name === 'nominal' ? 'Projected Wealth' : 'Purchasing Power',
                       ]}
                     />
-                    <Area type="monotone" dataKey="nominal" stroke="#63DDF5" strokeWidth={2.8} fill="url(#heroGradient)" />
-                    <Area type="monotone" dataKey="real" stroke="#8B7CFF" strokeWidth={2} strokeDasharray="4 4" fill="url(#heroRealGradient)" />
+                    <Area type="monotone" dataKey="nominal" stroke="#10B981" strokeWidth={2.8} fill="url(#heroGradient)" />
+                    <Area type="monotone" dataKey="real" stroke="#F59E0B" strokeWidth={2} strokeDasharray="4 4" fill="url(#heroRealGradient)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -390,7 +390,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── LIVE INTERACTIVE SANDBOX SECTION (#sandbox) ──────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ LIVE INTERACTIVE SANDBOX SECTION (#sandbox) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="sandbox" className="app-content border-y border-[var(--border-color)] bg-[var(--bg-surface)]/60 py-16 sm:py-24">
         <div className="mx-auto max-w-[1420px] px-5 sm:px-8 lg:px-12">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -403,7 +403,7 @@ export default function LandingPage() {
                 Test assumptions. Watch compounding work.
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
-                Adjust any variable below. This calculation runs live in your browser using the exact deterministic engine that powers WealthOS.
+                Adjust any variable below. This calculation runs live in your browser using the exact deterministic engine that powers Finance Manager.
               </p>
             </div>
 
@@ -416,7 +416,7 @@ export default function LandingPage() {
                     onClick={() => handleCurrencyChange(c)}
                     className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                       currency === c
-                        ? 'bg-[var(--accent-cyan)] text-[#07111F]'
+                        ? 'bg-[var(--accent-cyan)] text-[#071210]'
                         : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                     }`}
                   >
@@ -494,7 +494,7 @@ export default function LandingPage() {
                   onChange={(e) => setExpectedReturn(Number(e.target.value))}
                   className="mt-2 w-full accent-[var(--status-success)]"
                 />
-                <p className="mt-1 text-[10px] text-[var(--text-muted)]">Historical equity indexes average ~7–10% annualized.</p>
+                <p className="mt-1 text-[10px] text-[var(--text-muted)]">Historical equity indexes average ~7Ã¢â‚¬â€œ10% annualized.</p>
               </div>
 
               {/* Time Horizon Buttons */}
@@ -619,12 +619,12 @@ export default function LandingPage() {
                     <AreaChart data={chartData} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="nominalFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#63DDF5" stopOpacity={0.34} />
-                          <stop offset="100%" stopColor="#63DDF5" stopOpacity={0.0} />
+                          <stop offset="0%" stopColor="#10B981" stopOpacity={0.34} />
+                          <stop offset="100%" stopColor="#10B981" stopOpacity={0.0} />
                         </linearGradient>
                         <linearGradient id="realFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#8B7CFF" stopOpacity={0.24} />
-                          <stop offset="100%" stopColor="#8B7CFF" stopOpacity={0.0} />
+                          <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.24} />
+                          <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid vertical={false} stroke="rgba(168,180,197,.08)" />
@@ -647,8 +647,8 @@ export default function LandingPage() {
                           name === 'nominal' ? 'Nominal Wealth' : name === 'real' ? 'Real Purchasing Power' : 'Invested',
                         ]}
                       />
-                      <Area type="monotone" dataKey="nominal" stroke="#63DDF5" strokeWidth={3} fill="url(#nominalFill)" />
-                      <Area type="monotone" dataKey="real" stroke="#8B7CFF" strokeWidth={2.2} fill="url(#realFill)" />
+                      <Area type="monotone" dataKey="nominal" stroke="#10B981" strokeWidth={3} fill="url(#nominalFill)" />
+                      <Area type="monotone" dataKey="real" stroke="#F59E0B" strokeWidth={2.2} fill="url(#realFill)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -722,12 +722,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS (3 CLEAR STEPS) (#how-it-works) ─────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ HOW IT WORKS (3 CLEAR STEPS) (#how-it-works) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="how-it-works" className="app-content mx-auto max-w-[1420px] px-5 py-20 sm:px-8 lg:px-12">
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--accent-cyan)]">Architecture & Flow</p>
           <h2 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">
-            How WealthOS works in 3 clear steps.
+            How Finance Manager works in 3 clear steps.
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[var(--text-secondary)]">
             A transparent separation of concerns: deterministic math calculates the numbers, while AI translates those numbers into clear human context.
@@ -748,7 +748,7 @@ export default function LandingPage() {
               Input your current financial situation: savings, income, monthly living expenses, debt obligations, and regular contribution ability.
             </p>
             <div className="mt-4 rounded-xl bg-[var(--bg-surface-soft)] p-3 text-[11px] text-[var(--text-muted)] font-mono">
-              Inputs: Cashflow · Assets · Debt · Savings Rate
+              Inputs: Cashflow Ã‚Â· Assets Ã‚Â· Debt Ã‚Â· Savings Rate
             </div>
           </Card>
 
@@ -765,7 +765,7 @@ export default function LandingPage() {
               Mathematical formulas compute month-by-month compounding, contribution step-ups, inflation purchasing power discounting, and required goal funding.
             </p>
             <div className="mt-4 rounded-xl bg-[var(--bg-surface-soft)] p-3 text-[11px] text-[var(--text-muted)] font-mono">
-              Engine: Compound Interest · Annuity Due · Real-Value
+              Engine: Compound Interest Ã‚Â· Annuity Due Ã‚Â· Real-Value
             </div>
           </Card>
 
@@ -782,24 +782,24 @@ export default function LandingPage() {
               Google Gemini inspects the verified mathematical output and explains trade-offs, goal milestones, and scenario differences in accessible natural language.
             </p>
             <div className="mt-4 rounded-xl bg-[var(--bg-surface-soft)] p-3 text-[11px] text-[var(--text-muted)] font-mono">
-              Copilot: Scenario Q&A · Milestone Feasibility · Risk Trade-offs
+              Copilot: Scenario Q&A Ã‚Â· Milestone Feasibility Ã‚Â· Risk Trade-offs
             </div>
           </Card>
         </div>
       </section>
 
-      {/* ─── CORE APPLICATION MODULES SHOWCASE (#modules) ────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ CORE APPLICATION MODULES SHOWCASE (#modules) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="modules" className="app-content border-y border-[var(--border-color)] bg-[var(--bg-surface)]/50 py-20">
         <div className="mx-auto max-w-[1420px] px-5 sm:px-8 lg:px-12">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--accent-violet)]">Engineered Modules</p>
               <h2 className="mt-2 text-3xl font-extrabold tracking-[-.03em] text-[var(--text-primary)] sm:text-4xl">
-                Explore the complete WealthOS suite.
+                Explore the complete Finance Manager suite.
               </h2>
             </div>
             <p className="max-w-md text-sm text-[var(--text-secondary)]">
-              Every screen in WealthOS serves a specific purpose in modeling, stress-testing, and understanding your financial journey.
+              Every screen in Finance Manager serves a specific purpose in modeling, stress-testing, and understanding your financial journey.
             </p>
           </div>
 
@@ -815,7 +815,7 @@ export default function LandingPage() {
                 </span>
                 <h3 className="mt-5 text-lg font-bold text-[var(--text-primary)]">Wealth Simulator</h3>
                 <p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">
-                  Simulate wealth paths across 1–40 years. Test contribution timings, inflation adjustments, and annual step-up rates with immediate chart feedback.
+                  Simulate wealth paths across 1Ã¢â‚¬â€œ40 years. Test contribution timings, inflation adjustments, and annual step-up rates with immediate chart feedback.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[var(--border-color)]">
@@ -857,7 +857,7 @@ export default function LandingPage() {
                 </span>
                 <h3 className="mt-5 text-lg font-bold text-[var(--text-primary)]">Goal Engineering</h3>
                 <p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">
-                  Set target milestones like home ownership or emergency reserves. WealthOS solves for the required monthly allocation to hit your deadline.
+                  Set target milestones like home ownership or emergency reserves. Finance Manager solves for the required monthly allocation to hit your deadline.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[var(--border-color)]">
@@ -891,7 +891,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── METHODOLOGY, TRUST & TECHNICAL INTEGRITY (#methodology) ──── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ METHODOLOGY, TRUST & TECHNICAL INTEGRITY (#methodology) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="methodology" className="app-content mx-auto max-w-[1420px] px-5 py-20 sm:px-8 lg:px-12">
         <div className="text-center max-w-2xl mx-auto">
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--status-success)]">Methodology & Guardrails</p>
@@ -899,7 +899,7 @@ export default function LandingPage() {
             Engineered for mathematical truth.
           </h2>
           <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-            How WealthOS ensures mathematical accuracy, privacy, and responsible AI usage.
+            How Finance Manager ensures mathematical accuracy, privacy, and responsible AI usage.
           </p>
         </div>
 
@@ -926,7 +926,7 @@ export default function LandingPage() {
               <h3 className="text-base font-bold text-[var(--text-primary)]">Nominal vs Real Purchasing Power</h3>
             </div>
             <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-              WealthOS always displays nominal future wealth alongside inflation-discounted real value. Users always see how currency depreciation affects real-world buying power over decades.
+              Finance Manager always displays nominal future wealth alongside inflation-discounted real value. Users always see how currency depreciation affects real-world buying power over decades.
             </p>
           </Card>
 
@@ -960,12 +960,12 @@ export default function LandingPage() {
         {/* Legal / Educational Disclaimer Card */}
         <div className="mt-8 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface-soft)] p-5 text-center">
           <p className="text-xs leading-relaxed text-[var(--text-muted)]">
-            <strong className="text-[var(--text-secondary)]">Educational Simulator Notice:</strong> WealthOS is an interactive educational simulation platform designed to demonstrate deterministic mathematical compounding and financial literacy principles. It does not provide certified financial, investment, or tax advice, and does not guarantee investment returns.
+            <strong className="text-[var(--text-secondary)]">Educational Simulator Notice:</strong> Finance Manager is an interactive educational simulation platform designed to demonstrate deterministic mathematical compounding and financial literacy principles. It does not provide certified financial, investment, or tax advice, and does not guarantee investment returns.
           </p>
         </div>
       </section>
 
-      {/* ─── DEVELOPER PORTFOLIO & TECH STACK BADGE ───────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ DEVELOPER PORTFOLIO & TECH STACK BADGE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section className="app-content border-t border-[var(--border-color)] bg-[var(--bg-surface-elevated)]/40 py-12">
         <div className="mx-auto max-w-[1420px] px-5 sm:px-8 lg:px-12 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-[var(--accent-cyan)]/20 bg-[var(--accent-cyan-soft)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--accent-cyan)]">
@@ -975,7 +975,7 @@ export default function LandingPage() {
             Engineered with modern production technology
           </h3>
           <p className="mx-auto mt-1 max-w-xl text-xs text-[var(--text-secondary)]">
-            Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Framer Motion · Recharts · Supabase · Google Gemini AI
+            Next.js 16 (App Router) Ã‚Â· React 19 Ã‚Â· TypeScript Ã‚Â· Tailwind CSS v4 Ã‚Â· Framer Motion Ã‚Â· Recharts Ã‚Â· Supabase Ã‚Â· Google Gemini AI
           </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -1000,7 +1000,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── FINAL CALL TO ACTION ─────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ FINAL CALL TO ACTION Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section className="app-content relative mx-auto max-w-[1420px] px-5 py-20 sm:px-8 lg:px-12">
         <div className="relative overflow-hidden rounded-3xl border border-[var(--accent-cyan)]/25 bg-gradient-to-r from-[#0C1727] via-[#101D30] to-[#0C1727] p-8 text-center sm:p-14 shadow-2xl">
           <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[var(--accent-cyan-glow)] blur-3xl" />
@@ -1028,12 +1028,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── FOOTER ───────────────────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ FOOTER Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <footer className="app-content border-t border-[var(--border-color)] bg-[var(--bg-main)] px-5 py-10 sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-[1420px] flex-col justify-between gap-6 text-xs text-[var(--text-muted)] md:flex-row md:items-center">
           <div className="flex flex-col gap-1.5">
             <Logo size="sm" />
-            <p className="mt-1 text-[11px]">Personal Financial Future Simulator · AI Explains, Engine Calculates.</p>
+            <p className="mt-1 text-[11px]">Personal Financial Future Simulator Ã‚Â· AI Explains, Engine Calculates.</p>
           </div>
 
           <div className="flex flex-wrap gap-6">
@@ -1046,10 +1046,11 @@ export default function LandingPage() {
           </div>
 
           <div className="text-[11px]">
-            &copy; {new Date().getFullYear()} WealthOS. All rights reserved.
+            &copy; {new Date().getFullYear()} Finance Manager. All rights reserved.
           </div>
         </div>
       </footer>
     </main>
   );
 }
+

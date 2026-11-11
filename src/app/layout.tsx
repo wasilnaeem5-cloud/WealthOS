@@ -8,8 +8,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WealthOS — Model your financial future",
-  description: "An interactive financial future simulator that turns assumptions into understandable projections and explanations.",
+  title: "Finance Manager — Your financial future, clearly",
+  description: "Finance Manager is an AI-powered financial simulator that turns your assumptions into clear, deterministic projections you can explore, compare, and understand.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
